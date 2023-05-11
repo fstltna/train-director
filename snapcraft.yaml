@@ -1,0 +1,79 @@
+name:  train-director
+title:  Train Director
+version: "3.9p"
+summary:   Train Director is a clone of the popular Train Dispatcher simulation software
+description: |
+   Train Director is a clone of the popular Train Dispatcher simulation software. With Train Director you can simulate the work of the Centralized Traffic Control (CTC). Your task is to direct trains running in a territory to their final destination, by throwing switches and clearing signals. Penalties are collected for incorrect or inefficient operations, or for trains arriving late. You can also create your own territories with the included track layout editor. Train Director is available for Windows, Mac OS X and Linux.
+
+grade: stable
+icon: train-director_icon.png
+
+base: core18
+confinement: strict
+
+architectures:
+  - build-on: amd64
+  - build-on: i386
+
+environment:
+  WINEDLLOVERRIDES: "$WINEDLLOVERRIDES;mscoree,mshtml="    # Prevent pop-ups about Wine Mono and Wine Gecko
+  SOMMELIER_STRICT: "1"                                    # Make Sommelier exit when unset variable is used. (useful to find bugs in sommelier)
+
+apps:
+  train-director:
+    extensions: [ gnome-3-28 ]
+    command: bin/sommelier run-exe
+    environment:
+      RUN_EXE: "traindir3.exe"
+      #INSTALL_EXE: "$SNAP/Blockout25_setup.exe"
+      #INSTALL_FLAGS: "/S"
+    plugs:
+      - home
+      - network
+      - network-bind
+      - removable-media
+      - cups
+  # The wine command can be used to run applications inside the wine
+  # environment that this snap uses.
+  #
+  # For example, users can configure the wine environment of this snap
+  # by running `myapp.wine winecfg`.
+  wine:
+    extensions: [ gnome-3-28 ]
+    command: bin/sommelier
+    plugs:
+      - home
+      - network
+      - network-bind
+      - removable-media
+      - cups
+ # The winetricks command can be used to run winetricks inside the wine
+  # environment that this snap uses.
+  winetricks:
+    extensions: [ gnome-3-28 ]
+    command: bin/sommelier winetricks
+    plugs:
+      - network
+
+parts:
+  installer:
+    plugin: dump
+    source: ./
+
+  # The sommelier script helps you snap Windows applications using Wine. It 
+  # initializes and configures Wine and installs the Windows application.
+  sommelier:
+    plugin: make
+    source: https://github.com/snapcrafters/sommelier-core.git
+
+# These plugs are used to connect the snap to the wine runtime.
+plugs:
+  wine-runtime:
+    interface: content
+    target: $SNAP/wine-runtime
+    default-provider: wine-platform-runtime
+  wine-5-stable:
+    interface: content
+    target: $SNAP/wine-platform
+    default-provider: wine-platform-5-stable
+
